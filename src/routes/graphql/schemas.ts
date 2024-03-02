@@ -1,5 +1,8 @@
 import { Type } from '@fastify/type-provider-typebox';
-import { GraphQLBoolean, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { queryFields} from './resolvers/queries.js'
+import { GraphQLContext } from './types/types.js';
+import { UserType } from './types/graphql-types.js';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -20,9 +23,9 @@ export const createGqlResponseSchema = {
   ),
 };
 
-const rootQuery = new GraphQLObjectType({
+const rootQuery = new GraphQLObjectType<unknown, GraphQLContext>({
   name: 'Query',
-  fields: {}
+  fields: queryFields
 })
 
 const rootMutation = new GraphQLObjectType({
