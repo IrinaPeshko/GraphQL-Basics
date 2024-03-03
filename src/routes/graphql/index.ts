@@ -3,7 +3,6 @@ import { createGqlResponseSchema, gqlResponseSchema, schema } from './schemas.js
 import { graphql } from 'graphql';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-
   fastify.route({
     url: '/',
     method: 'POST',
@@ -14,7 +13,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     },
     async handler(req) {
-      console.log("Запрос получен", req.body);
       const { query, variables } = req.body;
       try {
         const result = await graphql({

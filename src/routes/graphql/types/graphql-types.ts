@@ -9,6 +9,7 @@ import {
   GraphQLString,
 } from 'graphql';
 import { UUIDType } from './uuid.js';
+import { MemberTypeId } from '../../member-types/schemas.js';
 
 let UserType;
 let ProfileType;
@@ -24,8 +25,30 @@ UserType = new GraphQLObjectType({
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
     profile: { type: ProfileType },
     posts: { type: new GraphQLList(PostType) },
-    userSubscribedTo: { type: new GraphQLList(SubscribersOnAuthorsType) },
-    subscribedToUser: { type: new GraphQLList(SubscribersOnAuthorsType) },
+    userSubscribedTo: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+      resolve: async (user, _args, context) => {
+        const subscriptions = await context.prisma.subscribersOnAuthors.findMany({
+          where: { subscriberId: user.id },
+          include: {
+            author: true,
+          },
+        });
+        return subscriptions.map((subscription) => subscription.author);
+      },
+    },
+    subscribedToUser: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+      resolve: async (user, _args, context) => {
+        const subscribers = await context.prisma.subscribersOnAuthors.findMany({
+          where: { authorId: user.id },
+          include: {
+            subscriber: true,
+          },
+        });
+        return subscribers.map((subscription) => subscription.subscriber);
+      },
+    },
   }),
 });
 
@@ -73,9 +96,16 @@ MemberType = new GraphQLObjectType({
 const MemberIdType = new GraphQLEnumType({
   name: 'MemberTypeId',
   values: {
-    BASIC: { value: 'basic' },
-    BUSINESS: { value: 'business' },
+    basic: { value: MemberTypeId.BASIC },
+    business: { value: MemberTypeId.BUSINESS },
   },
 });
 
-export { UserType, PostType, ProfileType, SubscribersOnAuthorsType, MemberType, MemberIdType };
+export {
+  UserType,
+  PostType,
+  ProfileType,
+  SubscribersOnAuthorsType,
+  MemberType,
+  MemberIdType,
+};
