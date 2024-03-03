@@ -38,6 +38,7 @@ PostType = new GraphQLObjectType({
     author: { type: UserType },
   }),
 });
+
 ProfileType = new GraphQLObjectType({
   name: 'Profile',
   fields: () => ({
@@ -48,6 +49,7 @@ ProfileType = new GraphQLObjectType({
     memberType: userResolvers.memberType,
   }),
 });
+
 SubscribersOnAuthorsType = new GraphQLObjectType({
   name: 'SubscribersOnAuthors',
   fields: () => ({
@@ -57,6 +59,7 @@ SubscribersOnAuthorsType = new GraphQLObjectType({
     authorId: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
+
 MemberType = new GraphQLObjectType({
   name: 'MemberType',
   fields: () => ({
@@ -73,6 +76,7 @@ const MemberIdType = new GraphQLEnumType({
     business: { value: MemberTypeId.BUSINESS },
   },
 });
+
 export {
   UserType,
   PostType,

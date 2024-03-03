@@ -5,7 +5,7 @@ import {
   PostType,
   ProfileType,
   UserType,
-} from '../types/graphql-types.js';
+} from '../types/graphql-queries=-types.js';
 import { GraphQLContext } from '../types/types.js';
 import { UUIDType } from '../types/uuid.js';
 
@@ -75,17 +75,6 @@ const memberType = {
     context.prisma.memberType.findUnique({ where: { id: args.id } }),
 };
 
-export const queryFields = {
-  users: { ...users },
-  user: { ...user },
-  posts: { ...posts },
-  post: { ...post },
-  profiles: { ...profiles },
-  profile: { ...profile },
-  memberTypes: { ...memberTypes },
-  memberType: { ...memberType },
-};
-
 export const userResolvers = {
   profile: {
     type: ProfileType,
@@ -139,4 +128,15 @@ export const userResolvers = {
       });
     },
   },
+};
+
+export const queryFields = {
+  users: { ...users },
+  user: { ...user },
+  posts: { ...posts },
+  post: { ...post },
+  profiles: { ...profiles },
+  profile: { ...profile },
+  memberTypes: { ...memberTypes },
+  memberType: { ...memberType },
 };
