@@ -85,3 +85,58 @@ export const queryFields = {
   memberTypes: { ...memberTypes },
   memberType: { ...memberType },
 };
+
+export const userResolvers = {
+  profile: {
+    type: ProfileType,
+    resolve: async (user, _args, context: GraphQLContext) => {
+      return await context.prisma.profile.findUnique({
+        where: { userId: user.id },
+      });
+    },
+  },
+
+  posts: {
+    type: new GraphQLList(PostType),
+    resolve: async (user, _args, context: GraphQLContext) => {
+      return await context.prisma.post.findMany({
+        where: { authorId: user.id },
+      });
+    },
+  },
+
+  userSubscribedTo: {
+    type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+    resolve: async (user, _args, context: GraphQLContext) => {
+      const subscriptions = await context.prisma.subscribersOnAuthors.findMany({
+        where: { subscriberId: user.id },
+        include: {
+          author: true,
+        },
+      });
+      return subscriptions.map((subscription) => subscription.author);
+    },
+  },
+
+  subscribedToUser: {
+    type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+    resolve: async (user, _args, context: GraphQLContext) => {
+      const subscribers = await context.prisma.subscribersOnAuthors.findMany({
+        where: { authorId: user.id },
+        include: {
+          subscriber: true,
+        },
+      });
+      return subscribers.map((subscription) => subscription.subscriber);
+    },
+  },
+
+  memberType: {
+    type: MemberType,
+    resolve: async (profile, _args, context: GraphQLContext) => {
+      return await context.prisma.memberType.findUnique({
+        where: { id: profile.memberTypeId },
+      });
+    },
+  },
+};

@@ -10,63 +10,25 @@ import {
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
-import { GraphQLContext } from './types.js';
+import { userResolvers } from '../resolvers/queries.js';
 
 let UserType;
 let ProfileType;
 let PostType;
 let SubscribersOnAuthorsType;
 let MemberType;
-
 UserType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: { type: new GraphQLNonNull(UUIDType) },
     name: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
-    profile: {
-      type: ProfileType,
-      resolve: async (user, _args, context: GraphQLContext) => {
-        return await context.prisma.profile.findUnique({
-          where: { userId: user.id },
-        });
-      },
-    },
-    posts: {
-      type: new GraphQLList(PostType),
-      resolve: async (user, _args, context: GraphQLContext) => {
-        return await context.prisma.post.findMany({
-          where: { authorId: user.id },
-        });
-      },
-    },
-    userSubscribedTo: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-      resolve: async (user, _args, context: GraphQLContext) => {
-        const subscriptions = await context.prisma.subscribersOnAuthors.findMany({
-          where: { subscriberId: user.id },
-          include: {
-            author: true,
-          },
-        });
-        return subscriptions.map((subscription) => subscription.author);
-      },
-    },
-    subscribedToUser: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-      resolve: async (user, _args, context: GraphQLContext) => {
-        const subscribers = await context.prisma.subscribersOnAuthors.findMany({
-          where: { authorId: user.id },
-          include: {
-            subscriber: true,
-          },
-        });
-        return subscribers.map((subscription) => subscription.subscriber);
-      },
-    },
+    profile: userResolvers.profile,
+    posts: userResolvers.posts,
+    userSubscribedTo: userResolvers.userSubscribedTo,
+    subscribedToUser: userResolvers.subscribedToUser,
   }),
 });
-
 PostType = new GraphQLObjectType({
   name: 'Post',
   fields: () => ({
@@ -76,7 +38,6 @@ PostType = new GraphQLObjectType({
     author: { type: UserType },
   }),
 });
-
 ProfileType = new GraphQLObjectType({
   name: 'Profile',
   fields: () => ({
@@ -84,17 +45,9 @@ ProfileType = new GraphQLObjectType({
     isMale: { type: GraphQLBoolean },
     yearOfBirth: { type: GraphQLInt },
     user: { type: UserType },
-    memberType: {
-      type: MemberType,
-      resolve: async (profile, _args, context: GraphQLContext) => {
-        return await context.prisma.memberType.findUnique({
-          where: { id: profile.memberTypeId },
-        });
-      },
-    },
+    memberType: userResolvers.memberType,
   }),
 });
-
 SubscribersOnAuthorsType = new GraphQLObjectType({
   name: 'SubscribersOnAuthors',
   fields: () => ({
@@ -104,7 +57,6 @@ SubscribersOnAuthorsType = new GraphQLObjectType({
     authorId: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
-
 MemberType = new GraphQLObjectType({
   name: 'MemberType',
   fields: () => ({
@@ -114,7 +66,6 @@ MemberType = new GraphQLObjectType({
     profiles: { type: new GraphQLList(ProfileType) },
   }),
 });
-
 const MemberIdType = new GraphQLEnumType({
   name: 'MemberTypeId',
   values: {
@@ -122,7 +73,6 @@ const MemberIdType = new GraphQLEnumType({
     business: { value: MemberTypeId.BUSINESS },
   },
 });
-
 export {
   UserType,
   PostType,
