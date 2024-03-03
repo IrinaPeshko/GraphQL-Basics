@@ -10,7 +10,7 @@ import { UUIDType } from './uuid.js';
 import { MemberIdType } from './graphql-queries=-types.js';
 
 const CreateUserInput = new GraphQLInputObjectType({
-  name: 'createUserType',
+  name: 'CreateUserInput',
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
@@ -18,7 +18,7 @@ const CreateUserInput = new GraphQLInputObjectType({
 });
 
 const CreatePostInput = new GraphQLInputObjectType({
-  name: 'createPostType',
+  name: 'CreatePostInput',
   fields: () => ({
     title: { type: new GraphQLNonNull(GraphQLString) },
     content: { type: new GraphQLNonNull(GraphQLString) },
@@ -27,7 +27,7 @@ const CreatePostInput = new GraphQLInputObjectType({
 });
 
 const CreateProfileInput = new GraphQLInputObjectType({
-  name: 'createProfileType',
+  name: 'CreateProfileInput',
   fields: () => ({
     isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
     yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
@@ -37,7 +37,7 @@ const CreateProfileInput = new GraphQLInputObjectType({
 });
 
 const changeUserType = new GraphQLInputObjectType({
-  name: 'changeUserType',
+  name: 'ChangeUserInput',
   fields: () => ({
     name: { type: GraphQLString },
     balance: { type: GraphQLFloat },
@@ -45,7 +45,7 @@ const changeUserType = new GraphQLInputObjectType({
 });
 
 const changePostType = new GraphQLInputObjectType({
-  name: 'changePostType',
+  name: 'ChangePostInput',
   fields: () => ({
     title: { type: GraphQLString },
     content: { type: GraphQLString },
@@ -54,13 +54,20 @@ const changePostType = new GraphQLInputObjectType({
 });
 
 const changeProfileType = new GraphQLInputObjectType({
-  name: 'changeProfileType',
+  name: 'ChangeProfileInput',
   fields: () => ({
     isMale: { type: GraphQLBoolean },
     yearOfBirth: { type: GraphQLInt },
     memberTypeId: { type: MemberIdType },
-    userId: { type: UUIDType },
   }),
 });
 
-export { MemberIdType, CreatePostInput, CreateUserInput, CreateProfileInput, changeUserType, changePostType, changeProfileType};
+export {
+  MemberIdType,
+  CreatePostInput,
+  CreateUserInput,
+  CreateProfileInput,
+  changeUserType,
+  changePostType,
+  changeProfileType,
+};

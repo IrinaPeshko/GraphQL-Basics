@@ -7,7 +7,7 @@ import {
   changeUserType,
   CreatePostInput,
   CreateUserInput,
-  CreateProfileInput
+  CreateProfileInput,
 } from '../types/graphql-mutations-types.js';
 import { UUIDType } from '../types/uuid.js';
 
