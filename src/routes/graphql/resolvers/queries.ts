@@ -8,11 +8,38 @@ import {
 } from '../types/graphql-queries=-types.js';
 import { GraphQLContext } from '../types/types.js';
 import { UUIDType } from '../types/uuid.js';
+import {
+  ResolveTree,
+  parseResolveInfo,
+  simplifyParsedResolveInfoFragmentWithType,
+} from 'graphql-parse-resolve-info';
 
 const users = {
   type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-  resolve: async (_parent, _args, context: GraphQLContext) =>
-    context.prisma.user.findMany(),
+  resolve: async (_parent, _args, context, info) => {
+    const parsedInfo = parseResolveInfo(info);
+    if (!parsedInfo) return null;
+
+    const { fields } = simplifyParsedResolveInfoFragmentWithType(
+      parsedInfo as ResolveTree,
+      new GraphQLList(UserType),
+    );
+    const includeSubscribedToUser = 'subscribedToUser' in fields;
+    const includeUserSubscribedTo = 'userSubscribedTo' in fields;
+
+    const users = await context.prisma.user.findMany({
+      include: {
+        subscribedToUser: includeSubscribedToUser,
+        userSubscribedTo: includeUserSubscribedTo,
+      },
+    });
+
+    users.forEach((user) => {
+      context.loaders.userLoader.prime(user.id, user);
+    });
+
+    return users;
+  },
 };
 
 const user = {
@@ -20,14 +47,9 @@ const user = {
   args: {
     id: { type: new GraphQLNonNull(UUIDType) },
   },
-  resolve: async (_parent, args, context: GraphQLContext) =>
-    context.prisma.user.findUnique({
-      where: { id: args.id },
-      include: {
-        userSubscribedTo: {},
-        subscribedToUser: true,
-      },
-    }),
+  resolve: async (_parent, args, context: GraphQLContext) => {
+    return await context.loaders.userLoader.load(args.id);
+  },
 };
 
 const posts = {
@@ -92,15 +114,27 @@ export const userResolvers = {
 
   userSubscribedTo: {
     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-    resolve: async (user, _args, context: GraphQLContext) => {
-      return context.loaders.userSubscribedToLoader.load(user.id);
+    resolve: async (parent, _args, context: GraphQLContext) => {
+      if (!parent.userSubscribedTo || !Array.isArray(parent.userSubscribedTo)) {
+        return [];
+      }
+
+      const authorIds = parent.userSubscribedTo.map((sub) => sub.authorId);
+
+      return context.loaders.userLoader.loadMany(authorIds);
     },
   },
 
   subscribedToUser: {
     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-    resolve: async (user, _args, context: GraphQLContext) => {
-      return context.loaders.subscribedToUserLoader.load(user.id);
+    resolve: async ({ subscribedToUser }, _args, context: GraphQLContext) => {
+      if (subscribedToUser) {
+        return await context.loaders.userLoader.loadMany(
+          subscribedToUser.map((user) => user.subscriberId),
+        );
+      }
+
+      return null;
     },
   },
 

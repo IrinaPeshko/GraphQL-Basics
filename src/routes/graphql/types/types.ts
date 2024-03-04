@@ -24,4 +24,5 @@ export interface Loaders {
   userSubscribedToLoader: DataLoader<string, subscribeUserLoader, string>;
   subscribedToUserLoader: DataLoader<string, subscribeUserLoader, string>;
   memberTypeLoader: DataLoader<string, memberTypeLoader, string>;
+  userLoader: DataLoader<string, subscribeUserLoader, string>;
 }
