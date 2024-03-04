@@ -79,18 +79,14 @@ export const userResolvers = {
   profile: {
     type: ProfileType,
     resolve: async (user, _args, context: GraphQLContext) => {
-      return await context.prisma.profile.findUnique({
-        where: { userId: user.id },
-      });
+      return context.loaders.profileLoader.load(user.id);
     },
   },
 
   posts: {
     type: new GraphQLList(PostType),
     resolve: async (user, _args, context: GraphQLContext) => {
-      return await context.prisma.post.findMany({
-        where: { authorId: user.id },
-      });
+      return context.loaders.postsLoader.load(user.id);
     },
   },
 
