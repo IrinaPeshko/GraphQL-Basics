@@ -93,35 +93,21 @@ export const userResolvers = {
   userSubscribedTo: {
     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
     resolve: async (user, _args, context: GraphQLContext) => {
-      const subscriptions = await context.prisma.subscribersOnAuthors.findMany({
-        where: { subscriberId: user.id },
-        include: {
-          author: true,
-        },
-      });
-      return subscriptions.map((subscription) => subscription.author);
+      return context.loaders.userSubscribedToLoader.load(user.id);
     },
   },
 
   subscribedToUser: {
     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
     resolve: async (user, _args, context: GraphQLContext) => {
-      const subscribers = await context.prisma.subscribersOnAuthors.findMany({
-        where: { authorId: user.id },
-        include: {
-          subscriber: true,
-        },
-      });
-      return subscribers.map((subscription) => subscription.subscriber);
+      return context.loaders.subscribedToUserLoader.load(user.id);
     },
   },
 
   memberType: {
     type: MemberType,
     resolve: async (profile, _args, context: GraphQLContext) => {
-      return await context.prisma.memberType.findUnique({
-        where: { id: profile.memberTypeId },
-      });
+      return context.loaders.memberTypeLoader.load(profile.memberTypeId);
     },
   },
 };
